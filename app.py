@@ -23,25 +23,32 @@ def get_subjects():
     obj = to_uri(request.args.get("object", None))
     return jsonify(list(graph.subjects(predicate=pred, object=obj)))
 
-@app.route("/predicates")
+@app.route("/predicates", methods=['POST'])
 def get_predicates():
-    return 0
+    sub = to_uri(request.args.get("subject", None))
+    obj = to_uri(request.args.get("object", None))
+    return jsonify(list(graph.predicates(subject=sub, object=obj)))
 
-@app.route("/objects")
+@app.route("/objects", methods=['POST'])
 def get_objects():
-    return 0
+    sub = to_uri(request.args.get("subject", None))
+    pred = to_uri(request.args.get("predicate", None))
+    return jsonify(list(graph.predicates(subject=sub, predicate=pred)))
 
-@app.route("/subject_objects")
+@app.route("/subject_objects", methods=['POST'])
 def get_subject_objects():
-    return 0
+    pred = to_uri(request.args.get("predicate", None))
+    return jsonify(list(graph.subject_objects(predicate=pred)))
     
-@app.route("/subject_predicates")
+@app.route("/subject_predicates", methods=['POST'])
 def get_subject_predicates():
-    return 0
+    obj = to_uri(request.args.get("object", None))
+    return jsonify(list(graph.subject_predicates(object=obj)))
     
-@app.route("/predicate_objects")
+@app.route("/predicate_objects", methods=['POST'])
 def get_predicate_objects():
-    return 0
+    sub = to_uri(request.args.get("subject", None))
+    return jsonify(list(graph.predicate_objects(subject=sub)))
 
 if __name__ == "__main__":
     app.run()
