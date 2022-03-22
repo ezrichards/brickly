@@ -6,6 +6,7 @@ import sys
 
 graph = rdflib.Graph()
 graph.parse(sys.argv[1], format="turtle")
+graph.parse("Brick.ttl", format="turtle")
 
 app = Flask(__name__)
 
