@@ -167,9 +167,9 @@ Blockly.Extensions.register('dynamic_let_extension', function() {
     let p = this.inputList[0]?.fieldRow?.[0]?.value_;
     let o = this.inputList[0]?.fieldRow?.[0]?.value_;
     let payload = {
-        "subject": s == "CHANGE ME" ? null : s,
+        "subject": s == "CHANGE ME" ? null : s, 
         "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        "object": o == "CHANGE ME" ? null : o,
+        "object": "http://www.w3.org/2002/07/owl#Class",
     };
     
     var options = [["Any", "ANY"]];
