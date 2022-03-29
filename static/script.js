@@ -1,21 +1,24 @@
 Blockly.Blocks['select'] = {
     init: function() {
         this.jsonInit({
-        "message0": 'select %1 where',
+            "message0": 'select %1 where',
         "args0": [
             {
-            "type": "input_value",
-            "name": "VALUE",
-            "check": "String"
+                "type": "input_value",
+                "name": "VALUE",
+                "check": "String"
             }
         ],
         "colour": 160,
         "tooltip": "Selects %1 where %2.",
         "helpUrl": "http://www.w3schools.com/jsref/jsref_length_string.asp",
         "nextStatement": null,
-        });
+    });
     }
 };
+
+var workspace;
+var variables = [];
 
 Blockly.Blocks['let'] = {
     init: function() {
@@ -53,6 +56,19 @@ Blockly.Blocks['let'] = {
         "previousStatement": null,
         "extensions": ["dynamic_let_extension"],
         });
+    },
+    onchange: function(event) {
+        // Check if block is dragged into this block
+        if(event.type == Blockly.Events.BLOCK_MOVE) {
+            if(event.newParentId !== undefined) {
+                for(let i = 0; i < workspace.getAllBlocks.length; i++) {
+                    if(workspace.getAllBlocks()[i].id === event.newParentId) {
+                        // TODO: this (i + 1) solution may not work when more blocks are in the workspace
+                        variables.push(workspace.getAllBlocks()[i + 1].inputList[0]?.fieldRow?.[1]?.value_);
+                    } 
+                }
+            }
+        }
     }
 };
 
@@ -164,16 +180,19 @@ async function post_data(endpoint, data) {
 
 Blockly.Extensions.register('dynamic_let_extension', function() {
     let s = this.inputList[0]?.fieldRow?.[0]?.value_;
-    let p = this.inputList[0]?.fieldRow?.[0]?.value_;
-    let o = this.inputList[0]?.fieldRow?.[0]?.value_;
     let payload = {
         "subject": s == "CHANGE ME" ? null : s, 
         "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
         "object": "http://www.w3.org/2002/07/owl#Class",
     };
     
-    var options = [["Any", "ANY"]];
+    var options = [["Any", "ANY"]];    
     if(s !== "ANY") {
+        for(let i = 0; i < variables.length; i++) {
+            console.log([variables[i]]);
+            options.push([variables[i], variables[i]]);
+        }
+
         post_data("objects", payload).then(subjects => {
             for(let i = 0; i < subjects.length; i++) { 
                 options.push([subjects[i], subjects[i]]);
@@ -285,7 +304,7 @@ var toolbox = {
     ]
 }
 
-var workspace = Blockly.inject('blocklyDiv', {toolbox: toolbox});
+workspace = Blockly.inject('blocklyDiv', {toolbox: toolbox});
 
 Blockly.JavaScript['select'] = function(block) {
     var dropdown_subject = block.getFieldValue('subject');
@@ -296,6 +315,15 @@ Blockly.JavaScript['select'] = function(block) {
     return code;
 };
 
+Blockly.JavaScript['let'] = function(block) {
+    var dropdown_subject = block.getFieldValue('subject');
+    var text_predicate = block.getFieldValue('PREDICATE');
+    var dropdown_object = block.getFieldValue('object');
+    // TODO: Assemble JavaScript into code variable.
+    var code = 'LET:\n' + dropdown_subject + " " + text_predicate + " " + dropdown_object;
+    return code;
+};
+
 Blockly.JavaScript['triple'] = function(block) {
     var dropdown_subject = block.getFieldValue('subject');
     var text_predicate = block.getFieldValue('PREDICATE');
@@ -303,10 +331,12 @@ Blockly.JavaScript['triple'] = function(block) {
     // TODO: Assemble JavaScript into code variable.
     var code = 'TRIPLE:\n' + dropdown_subject + " " + text_predicate + " " + dropdown_object;
     return code;
-}; // generate SPARQL directly?
+};
 
 // TODO generate link to "Resultant query" of sparql.gtf.fyi or embed it inside
+
+// Real-time code generation
 function generateCode() {
     var code = Blockly.JavaScript.workspaceToCode(workspace);
-    console.log(code);
+    document.getElementById("code").innerHTML = code;
 }

@@ -23,14 +23,7 @@ def filter_bnodes(seq):
         elif isinstance(item, rdflib.BNode):
             continue
         res.append(item)
-    return res
-
-def filter_duplicates(seq):
-    res = []
-    for item in seq:
-        if not item in res:
-            res.append(item)
-    return res
+    return list(set(res))
 
 @app.route("/")
 def home():
@@ -46,13 +39,13 @@ def get_subjects():
 def get_predicates():
     sub = to_uri(request.args.get("subject", None))
     obj = to_uri(request.args.get("object", None))
-    return jsonify(filter_bnodes(filter_duplicates(graph.predicates(subject=sub, object=obj))))
+    return jsonify(filter_bnodes(graph.predicates(subject=sub, object=obj)))
 
 @app.route("/objects", methods=['POST'])
 def get_objects():
     sub = to_uri(request.args.get("subject", None))
     pred = to_uri(request.args.get("predicate", None))
-    return jsonify(filter_bnodes(filter_duplicates(graph.objects(subject=sub, predicate=pred))))
+    return jsonify(filter_bnodes(graph.objects(subject=sub, predicate=pred)))
 
 @app.route("/subject_objects", methods=['POST'])
 def get_subject_objects():

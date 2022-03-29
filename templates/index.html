@@ -6,6 +6,12 @@
     <body>
         <div id="blocklyDiv" style="height: 480px; width: 600px;"></div>
         <button id="generate" onclick="generateCode()">Generate Code</button>
+
+        <div>            
+            <textarea id="code" rows="5" cols="50">
+                No Code Generated
+            </textarea>
+        </div>
     </body>
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
