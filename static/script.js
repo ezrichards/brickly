@@ -1,23 +1,4 @@
-Blockly.Blocks['select'] = {
-    init: function() {
-        this.jsonInit({
-            "message0": 'select %1 where',
-        "args0": [
-            {
-                "type": "input_value",
-                "name": "VALUE",
-                "check": "String"
-            }
-        ],
-        "colour": 160,
-        "tooltip": "Selects %1 where %2.",
-        "helpUrl": "http://www.w3schools.com/jsref/jsref_length_string.asp",
-        "nextStatement": null,
-    });
-    }
-};
-
-var workspace;
+var variableStore = {};
 var variables = [];
 
 Blockly.Blocks['let'] = {
@@ -26,9 +7,9 @@ Blockly.Blocks['let'] = {
         "message0": 'let %1 be a %2',
         "args0": [
             {
-            "type": "input_value",
-            "name": "VALUE",
-            "check": "String"
+            "type": "field_input",
+            "name": "VARIABLE_NAME",
+            "text": "variable"
             },
             {
             "type": "input_dummy",
@@ -58,16 +39,16 @@ Blockly.Blocks['let'] = {
         });
     },
     onchange: function(event) {
-        // Check if block is dragged into this block
-        if(event.type == Blockly.Events.BLOCK_MOVE) {
-            if(event.newParentId !== undefined) {
-                for(let i = 0; i < workspace.getAllBlocks.length; i++) {
-                    if(workspace.getAllBlocks()[i].id === event.newParentId) {
-                        // TODO: this (i + 1) solution may not work when more blocks are in the workspace
-                        variables.push(workspace.getAllBlocks()[i + 1].inputList[0]?.fieldRow?.[1]?.value_);
-                    } 
-                }
+        for(var key in variableStore) {
+            // remove old variablename if exists
+            if(key == event.blockId) {
+                delete variableStore[event.blockId];
             }
+        }
+
+        // make a dict/mapping of blockId -> variableName (only ever one block)
+        if(event.type == Blockly.Events.BLOCK_CHANGE) {
+            variableStore[event.blockId] = event.newValue; // save variable name under block id key
         }
     }
 };
@@ -78,10 +59,11 @@ Blockly.Blocks['limit'] = {
         "message0": 'limit %1 ',
         "args0": [
             {
-            "type": "input_value",
-            "name": "VALUE",
-            "check": "Number"
-            }
+            "type": "field_number",
+            "name": "limit_num",
+            "value": 0,
+            "min": 0
+            },
         ],
         "colour": 160,
         "tooltip": "Limits query to %1 results.",
@@ -162,6 +144,7 @@ Blockly.Blocks['triple'] = {
     },
 };
 
+
 async function post_data(endpoint, data) {
     const response = await fetch("http://localhost:5000/" + endpoint, {
         method: 'POST',
@@ -178,6 +161,7 @@ async function post_data(endpoint, data) {
     return response.json();
 }
 
+// TODO: When block is deleted, remove it from the variableStore; also buggy with certain block movements
 Blockly.Extensions.register('dynamic_let_extension', function() {
     let s = this.inputList[0]?.fieldRow?.[0]?.value_;
     let payload = {
@@ -188,12 +172,11 @@ Blockly.Extensions.register('dynamic_let_extension', function() {
     
     var options = [["Any", "ANY"]];    
     if(s !== "ANY") {
-        for(let i = 0; i < variables.length; i++) {
-            console.log([variables[i]]);
-            options.push([variables[i], variables[i]]);
+        for(var key in variableStore) {
+            variables.push([key, variableStore[key]]);
         }
 
-        post_data("objects", payload).then(subjects => {
+        post_data("subjects", payload).then(subjects => {
             for(let i = 0; i < subjects.length; i++) { 
                 options.push([subjects[i], subjects[i]]);
             }
@@ -204,7 +187,7 @@ Blockly.Extensions.register('dynamic_let_extension', function() {
         function() {
             return options;   
         }
-    ), 'objects_input_field')
+    ))
 })
 
 Blockly.Extensions.register('dynamic_triple_extension', function() {
@@ -219,6 +202,10 @@ Blockly.Extensions.register('dynamic_triple_extension', function() {
     
     var options = [["Change Me", "CHANGE"]];
     if(s !== "CHANGE") {
+        for(var key in variableStore) {
+            options.push([variableStore[key], key]);
+        }
+
         post_data("subjects", payload).then(subjects => {
             for(let i = 0; i < subjects.length; i++) { 
                 options.push([subjects[i], subjects[i]]);
@@ -230,7 +217,7 @@ Blockly.Extensions.register('dynamic_triple_extension', function() {
         function() {
             return options;   
         }
-    ), 'subject_input_field')
+    ))
     
     var predicateOptions = [["Change Me", "CHANGE"]];
     if(p !== "CHANGE") {
@@ -245,13 +232,13 @@ Blockly.Extensions.register('dynamic_triple_extension', function() {
         function() {
             return predicateOptions;   
         }
-    ), 'predicate_input_field')
+    ))
 
     this.getInput('object').appendField(new Blockly.FieldDropdown(
         function() {
             return options;   
         }
-    ), 'object_input_field')
+    ))
 });
 
 var toolbox = {
@@ -259,11 +246,7 @@ var toolbox = {
     "contents": [
         {
         "kind": "block",
-        "type": "limit"
-        },
-        {
-        "kind": "block",
-        "type": "select"
+        "type": "triple",
         },
         {
         "kind": "block",
@@ -271,72 +254,90 @@ var toolbox = {
         },
         {
         "kind": "block",
-        "type": "triple",
+        "type": "limit"
         },
-        {
-        "kind": "block",
-        "type": "controls_if"
-        },
-        {
-        "kind": "block",
-        "type": "controls_repeat_ext"
-        },
-        {
-        "kind": "block",
-        "type": "logic_compare"
-        },
-        {
-        "kind": "block",
-        "type": "math_number"
-        },
-        {
-        "kind": "block",
-        "type": "math_arithmetic"
-        },
-        {
-        "kind": "block",
-        "type": "text"
-        },
-        {
-        "kind": "block",
-        "type": "text_print"
-        },
+        // {
+        // "kind": "block",
+        // "type": "controls_if"
+        // },
+        // {
+        // "kind": "block",
+        // "type": "controls_repeat_ext"
+        // },
+        // {
+        // "kind": "block",
+        // "type": "logic_compare"
+        // },
+        // {
+        // "kind": "block",
+        // "type": "math_number"
+        // },
+        // {
+        // "kind": "block",
+        // "type": "math_arithmetic"
+        // },
+        // {
+        // "kind": "block",
+        // "type": "text"
+        // },
+        // {
+        // "kind": "block",
+        // "type": "text_print"
+        // },
     ]
 }
 
-workspace = Blockly.inject('blocklyDiv', {toolbox: toolbox});
+var workspace = Blockly.inject('blocklyDiv', {toolbox: toolbox});
 
-Blockly.JavaScript['select'] = function(block) {
-    var dropdown_subject = block.getFieldValue('subject');
-    var text_predicate = block.getFieldValue('PREDICATE');
-    var dropdown_object = block.getFieldValue('object');
-    // TODO: Assemble JavaScript into code variable.
-    var code = 'SELECT...;\n';
-    return code;
+/**
+ * "let" block doesn't actually affect the generated SPARQL query,
+ * but Blockly requires each block to have a code generator so an
+ * empty string is returned.
+ * @returns empty string for code generation
+ */
+Blockly.JavaScript['let'] = function() {
+    return "";
 };
 
-Blockly.JavaScript['let'] = function(block) {
-    var dropdown_subject = block.getFieldValue('subject');
-    var text_predicate = block.getFieldValue('PREDICATE');
-    var dropdown_object = block.getFieldValue('object');
-    // TODO: Assemble JavaScript into code variable.
-    var code = 'LET:\n' + dropdown_subject + " " + text_predicate + " " + dropdown_object;
-    return code;
-};
-
+var prefix = 'SELECT * WHERE {\n';
+var suffix = '}'
 Blockly.JavaScript['triple'] = function(block) {
-    var dropdown_subject = block.getFieldValue('subject');
-    var text_predicate = block.getFieldValue('PREDICATE');
-    var dropdown_object = block.getFieldValue('object');
-    // TODO: Assemble JavaScript into code variable.
-    var code = 'TRIPLE:\n' + dropdown_subject + " " + text_predicate + " " + dropdown_object;
+    let s = block.inputList[0]?.fieldRow?.[0]?.selectedOption_[0];
+    let p = block.inputList[1]?.fieldRow?.[0]?.selectedOption_[0];
+    let o = block.inputList[2]?.fieldRow?.[0]?.selectedOption_[0];
+
+    var code = '\n';
+    if(s.startsWith("http")) {
+        code += "   <" + s + ">";
+    }
+    else {
+        code += "   ?" + s;
+    }
+
+    code += " <" + p + ">";
+    
+    if(o.startsWith("http")) {
+        code += " <" + o + ">";
+    }
+    else {
+        code += " ?" + o;
+    }
+
+    code += " . \n"
     return code;
+};
+
+var limitStr = "";
+Blockly.JavaScript['limit'] = function(block) {
+    var limit = block.getFieldValue('limit_num');
+    if(limit > -1) {
+        limitStr += " LIMIT " + limit;
+    }
+    return "";
 };
 
 // TODO generate link to "Resultant query" of sparql.gtf.fyi or embed it inside
-
-// Real-time code generation
 function generateCode() {
     var code = Blockly.JavaScript.workspaceToCode(workspace);
-    document.getElementById("code").innerHTML = code;
+    document.getElementById("code").innerHTML = prefix + code + suffix + limitStr;
 }

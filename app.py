@@ -8,6 +8,11 @@ graph = rdflib.Graph()
 graph.parse(sys.argv[1], format="turtle")
 graph.parse("brick-classes.ttl", format="turtle")
 
+# Next step: Run generated queries (after checking on sparql.gtf.fyi)
+# graph.loadfile(bldg.ttl) -> graph.serve()
+# brickschema web interface docs
+# see on github: py-brickschema web.py & index.html
+
 app = Flask(__name__)
 
 def to_uri(abbr):
@@ -28,6 +33,8 @@ def filter_bnodes(seq):
 @app.route("/")
 def home():
     return render_template("index.html")
+
+# TODO: sort by decreasing frequency/alphabetically; use Counter class from collections, c = counter(x) and then c.most_common()
 
 @app.route("/subjects", methods=['POST'])
 def get_subjects():
