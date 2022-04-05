@@ -39,16 +39,23 @@ Blockly.Blocks['let'] = {
         });
     },
     onchange: function(event) {
-        for(var key in variableStore) {
-            // remove old variablename if exists
-            if(key == event.blockId) {
-                delete variableStore[event.blockId];
-            }
-        }
-
         // make a dict/mapping of blockId -> variableName (only ever one block)
         if(event.type == Blockly.Events.BLOCK_CHANGE) {
             variableStore[event.blockId] = event.newValue; // save variable name under block id key
+        }
+        else if(event.type === Blockly.Events.BLOCK_DELETE) {
+            // When block is deleted, remove it from the variableStore
+            console.log("DELETE EVENT: " + event);
+
+            for(var key in variableStore) { // (Move this to block delete)
+                // remove old variablename if exists
+                if(key == event.blockId) {
+                    delete variableStore[event.blockId];
+                }
+            }
+        }
+        else if(event.type == Blockly.Events.BLOCK_DRAG) {
+            console.log("DRAG EVENT: " + event);
         }
     }
 };
@@ -161,7 +168,7 @@ async function post_data(endpoint, data) {
     return response.json();
 }
 
-// TODO: When block is deleted, remove it from the variableStore; also buggy with certain block movements
+// TODO: test certain block movements, some are still buggy
 Blockly.Extensions.register('dynamic_let_extension', function() {
     let s = this.inputList[0]?.fieldRow?.[0]?.value_;
     let payload = {
@@ -289,18 +296,19 @@ var toolbox = {
 
 var workspace = Blockly.inject('blocklyDiv', {toolbox: toolbox});
 
-/**
- * "let" block doesn't actually affect the generated SPARQL query,
- * but Blockly requires each block to have a code generator so an
- * empty string is returned.
- * @returns empty string for code generation
- */
-Blockly.JavaScript['let'] = function() {
-    return "";
+Blockly.JavaScript['let'] = function(block) {
+    let varName = block.inputList[0]?.fieldRow?.[1]?.value_;
+    let type = block.inputList[0]?.fieldRow?.[3]?.selectedOption_[0];
+    let str = "";
+
+    if(type != "Any") {
+        str += "?" + varName + " rdf:type <" + type + "> .";
+    }
+    return str;
 };
 
 var prefix = 'SELECT * WHERE {\n';
-var suffix = '}'
+var suffix = '}';
 Blockly.JavaScript['triple'] = function(block) {
     let s = block.inputList[0]?.fieldRow?.[0]?.selectedOption_[0];
     let p = block.inputList[1]?.fieldRow?.[0]?.selectedOption_[0];

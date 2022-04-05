@@ -3,6 +3,7 @@ from flask import request, jsonify
 import rdflib
 from rdflib.util import from_n3
 import sys
+from collections import Counter
 
 graph = rdflib.Graph()
 graph.parse(sys.argv[1], format="turtle")
@@ -40,6 +41,12 @@ def home():
 def get_subjects():
     pred = to_uri(request.args.get("predicate", None))
     obj = to_uri(request.args.get("object", None))
+
+    # can't filter bnodes in counter or duplicates will be filtered too
+    c = Counter(graph.subjects(predicate=pred, object=obj))
+
+    print(c.most_common())
+
     return jsonify(filter_bnodes(graph.subjects(predicate=pred, object=obj)))
 
 @app.route("/predicates", methods=['POST'])
