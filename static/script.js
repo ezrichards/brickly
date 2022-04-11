@@ -41,21 +41,20 @@ Blockly.Blocks['let'] = {
     onchange: function(event) {
         // make a dict/mapping of blockId -> variableName (only ever one block)
         if(event.type == Blockly.Events.BLOCK_CHANGE) {
-            variableStore[event.blockId] = event.newValue; // save variable name under block id key
+
+            // TODO: If block changes, it won't update the triple block at the moment.
+
+            // save variable name under block id key
+            variableStore[event.blockId] = '?' + event.newValue; // key should have ? in front to signify variable
         }
         else if(event.type === Blockly.Events.BLOCK_DELETE) {
             // When block is deleted, remove it from the variableStore
-            console.log("DELETE EVENT: " + event);
-
-            for(var key in variableStore) { // (Move this to block delete)
+            for(let key in variableStore) { // (Move this to block delete)
                 // remove old variablename if exists
                 if(key == event.blockId) {
                     delete variableStore[event.blockId];
                 }
             }
-        }
-        else if(event.type == Blockly.Events.BLOCK_DRAG) {
-            console.log("DRAG EVENT: " + event);
         }
     }
 };
@@ -170,19 +169,19 @@ async function post_data(endpoint, data) {
 
 // TODO: test certain block movements, some are still buggy
 Blockly.Extensions.register('dynamic_let_extension', function() {
-    let s = this.inputList[0]?.fieldRow?.[0]?.value_;
+    let s = this.inputList[0]?.fieldRow?.[1]?.value_;
     let payload = {
         "subject": s == "CHANGE ME" ? null : s, 
         "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
         "object": "http://www.w3.org/2002/07/owl#Class",
     };
     
-    var options = [["Any", "ANY"]];    
-    if(s !== "ANY") {
-        for(var key in variableStore) {
-            variables.push([key, variableStore[key]]);
-        }
+    let options = [["Any", "ANY"]];    
+    for(let key in variableStore) {
+        variables.push([key, variableStore[key]]);
+    }
 
+    if(s !== "ANY") {
         post_data("subjects", payload).then(subjects => {
             for(let i = 0; i < subjects.length; i++) { 
                 options.push([subjects[i], subjects[i]]);
@@ -207,15 +206,15 @@ Blockly.Extensions.register('dynamic_triple_extension', function() {
         "object": o == "CHANGE ME" ? null : o,
     };
     
-    var options = [["Change Me", "CHANGE"]];
-    if(s !== "CHANGE") {
-        for(var key in variableStore) {
-            options.push([variableStore[key], key]);
-        }
+    let options = [["Change Me", "CHANGE"]];
+    for(let key in variableStore) {
+        options.push([variableStore[key], key]);
+    }
 
+    if(s !== "CHANGE") {
         post_data("subjects", payload).then(subjects => {
             for(let i = 0; i < subjects.length; i++) { 
-                options.push([subjects[i], subjects[i]]);
+                options.push([subjects[i][0], subjects[i][0]]);
             }
         });
     }
@@ -226,7 +225,7 @@ Blockly.Extensions.register('dynamic_triple_extension', function() {
         }
     ))
     
-    var predicateOptions = [["Change Me", "CHANGE"]];
+    let predicateOptions = [["Change Me", "CHANGE"]];
     if(p !== "CHANGE") {
         post_data("predicates", payload).then(predicates => {
             for(let i = 0; i < predicates.length; i++) { 
@@ -263,34 +262,6 @@ var toolbox = {
         "kind": "block",
         "type": "limit"
         },
-        // {
-        // "kind": "block",
-        // "type": "controls_if"
-        // },
-        // {
-        // "kind": "block",
-        // "type": "controls_repeat_ext"
-        // },
-        // {
-        // "kind": "block",
-        // "type": "logic_compare"
-        // },
-        // {
-        // "kind": "block",
-        // "type": "math_number"
-        // },
-        // {
-        // "kind": "block",
-        // "type": "math_arithmetic"
-        // },
-        // {
-        // "kind": "block",
-        // "type": "text"
-        // },
-        // {
-        // "kind": "block",
-        // "type": "text_print"
-        // },
     ]
 }
 
@@ -302,50 +273,57 @@ Blockly.JavaScript['let'] = function(block) {
     let str = "";
 
     if(type != "Any") {
-        str += "?" + varName + " rdf:type <" + type + "> .";
+        str += "?" + varName + " rdf:type <" + type + "> .\n";
     }
     return str;
 };
 
-var prefix = 'SELECT * WHERE {\n';
-var suffix = '}';
+let prefix = 'PREFIX brick: <https://brickschema.org/schema/Brick#>\n\
+PREFIX unit: <http://qudt.org/vocab/unit/>\n\
+PREFIX owl: <http://www.w3.org/2002/07/owl#>\n\
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n\
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n\
+\
+SELECT * WHERE {\n';
+let suffix = '}';
 Blockly.JavaScript['triple'] = function(block) {
     let s = block.inputList[0]?.fieldRow?.[0]?.selectedOption_[0];
     let p = block.inputList[1]?.fieldRow?.[0]?.selectedOption_[0];
     let o = block.inputList[2]?.fieldRow?.[0]?.selectedOption_[0];
 
-    var code = '\n';
-    if(s.startsWith("http")) {
+    let code = "";
+    if(!s.startsWith("?")) {
         code += "   <" + s + ">";
     }
     else {
-        code += "   ?" + s;
+        code += s;
     }
 
-    code += " <" + p + ">";
+    code += " <" + p + "> ";
     
-    if(o.startsWith("http")) {
+    if(!o.startsWith("?")) {
         code += " <" + o + ">";
     }
     else {
-        code += " ?" + o;
+        code += o;
     }
-
     code += " . \n"
     return code;
 };
 
-var limitStr = "";
+let limitStr = "";
 Blockly.JavaScript['limit'] = function(block) {
-    var limit = block.getFieldValue('limit_num');
+    let limit = block.getFieldValue('limit_num');
     if(limit > -1) {
         limitStr += " LIMIT " + limit;
     }
     return "";
 };
 
-// TODO generate link to "Resultant query" of sparql.gtf.fyi or embed it inside
+const yasgui = new Yasgui(document.getElementById("yasgui"));
 function generateCode() {
-    var code = Blockly.JavaScript.workspaceToCode(workspace);
-    document.getElementById("code").innerHTML = prefix + code + suffix + limitStr;
+    let code = Blockly.JavaScript.workspaceToCode(workspace);
+    let query = prefix + code + suffix + limitStr;
+    document.getElementById("code").innerHTML = query;
+    yasgui.getTab().yasqe.setValue(query);
 }

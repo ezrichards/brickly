@@ -1,3 +1,4 @@
+import json
 from flask import Flask, render_template
 from flask import request, jsonify
 import rdflib
@@ -8,11 +9,6 @@ from collections import Counter
 graph = rdflib.Graph()
 graph.parse(sys.argv[1], format="turtle")
 graph.parse("brick-classes.ttl", format="turtle")
-
-# Next step: Run generated queries (after checking on sparql.gtf.fyi)
-# graph.loadfile(bldg.ttl) -> graph.serve()
-# brickschema web interface docs
-# see on github: py-brickschema web.py & index.html
 
 app = Flask(__name__)
 
@@ -29,25 +25,25 @@ def filter_bnodes(seq):
         elif isinstance(item, rdflib.BNode):
             continue
         res.append(item)
-    return list(set(res))
+    return sorted(list(set(res)))
 
 @app.route("/")
 def home():
     return render_template("index.html")
-
-# TODO: sort by decreasing frequency/alphabetically; use Counter class from collections, c = counter(x) and then c.most_common()
 
 @app.route("/subjects", methods=['POST'])
 def get_subjects():
     pred = to_uri(request.args.get("predicate", None))
     obj = to_uri(request.args.get("object", None))
 
-    # can't filter bnodes in counter or duplicates will be filtered too
+    # TODO: sort by decreasing frequency; something wrong with filter_bnodes
+    # c = Counter(filter_bnodes(graph.subjects(predicate=pred, object=obj)))
+
     c = Counter(graph.subjects(predicate=pred, object=obj))
 
-    print(c.most_common())
+    return jsonify(c.most_common())
 
-    return jsonify(filter_bnodes(graph.subjects(predicate=pred, object=obj)))
+    # return jsonify(filter_bnodes(graph.subjects(predicate=pred, object=obj)))
 
 @app.route("/predicates", methods=['POST'])
 def get_predicates():

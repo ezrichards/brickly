@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <head>
     <title>Blockly Testing</title>
+    <link href="https://unpkg.com/@triply/yasgui/build/yasgui.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://unpkg.com/@triply/yasgui/build/yasgui.min.js"></script>
 </head>
 <html>
     <body>
-        <div id="blocklyDiv" style="height: 480px; width: 600px;"></div>
+        <div id="blocklyDiv" style="height: 480px; width: 1000px;"></div>
         <button id="generate" onclick="generateCode()">Generate Code</button>
 
         <div>            
-            <textarea id="code" rows="5" cols="50">
-                No Code Generated
-            </textarea>
+            <textarea id="code" rows="5" cols="50">No Code Generated</textarea>
         </div>
+        <div id="yasgui"></div>
     </body>
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
