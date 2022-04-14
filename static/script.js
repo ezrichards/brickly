@@ -1,5 +1,6 @@
 var variableStore = {};
 var variables = [];
+var workspace;
 
 Blockly.Blocks['let'] = {
     init: function() {
@@ -40,12 +41,30 @@ Blockly.Blocks['let'] = {
     },
     onchange: function(event) {
         // make a dict/mapping of blockId -> variableName (only ever one block)
-        if(event.type == Blockly.Events.BLOCK_CHANGE) {
-
-            // TODO: If block changes, it won't update the triple block at the moment.
-
+        if(event.type == Blockly.Events.BLOCK_CHANGE) {            
             // save variable name under block id key
+
+            // Variables are being added as each letter is typed - we probably need to delete
+            // extra variables by blockId or splice-delete them from the dropdown 
+
+            // for(let key in variableStore) { 
+            //     if(key == event.blockId) {
+            //         delete variableStore[event.blockId];
+            //     }
+            // }
+
             variableStore[event.blockId] = '?' + event.newValue; // key should have ? in front to signify variable
+
+            if(workspace !== undefined) {
+                for(let block in workspace.getAllBlocks()) {
+                    if(workspace.getAllBlocks()[block].type === "triple") {
+                        let s = workspace.getAllBlocks()[block].inputList[0].fieldRow[0].generatedOptions_;            
+                        for(let key in variableStore) { 
+                            s.splice(1, 0, [variableStore[key], key]);
+                        }
+                    }
+                }
+            }
         }
         else if(event.type === Blockly.Events.BLOCK_DELETE) {
             // When block is deleted, remove it from the variableStore
@@ -148,6 +167,17 @@ Blockly.Blocks['triple'] = {
         "helpUrl": "https://www.w3.org/TR/rdf-concepts/#section-triples"
         });
     },
+    onchange: function(event) {
+        // if(event.type == Blockly.Events.BLOCK_CHANGE) {
+        //     let s = this.inputList[0].fieldRow[0].generatedOptions_;
+        //     s.splice(1, 0, ["THIS IS A TEST", "testId"])
+        //     console.log("S: ", s);
+
+        //     for(let key in variableStore) { 
+        //         console.log("key: ", key);
+        //     }
+        // }
+    }
 };
 
 
@@ -167,7 +197,7 @@ async function post_data(endpoint, data) {
     return response.json();
 }
 
-// TODO: test certain block movements, some are still buggy
+// TODO bNodes may still be happening
 Blockly.Extensions.register('dynamic_let_extension', function() {
     let s = this.inputList[0]?.fieldRow?.[1]?.value_;
     let payload = {
@@ -214,7 +244,7 @@ Blockly.Extensions.register('dynamic_triple_extension', function() {
     if(s !== "CHANGE") {
         post_data("subjects", payload).then(subjects => {
             for(let i = 0; i < subjects.length; i++) { 
-                options.push([subjects[i][0], subjects[i][0]]);
+                options.push([subjects[i], subjects[i]]);
             }
         });
     }
@@ -265,7 +295,7 @@ var toolbox = {
     ]
 }
 
-var workspace = Blockly.inject('blocklyDiv', {toolbox: toolbox});
+workspace = Blockly.inject('blocklyDiv', {toolbox: toolbox});
 
 Blockly.JavaScript['let'] = function(block) {
     let varName = block.inputList[0]?.fieldRow?.[1]?.value_;
@@ -324,6 +354,5 @@ const yasgui = new Yasgui(document.getElementById("yasgui"));
 function generateCode() {
     let code = Blockly.JavaScript.workspaceToCode(workspace);
     let query = prefix + code + suffix + limitStr;
-    document.getElementById("code").innerHTML = query;
     yasgui.getTab().yasqe.setValue(query);
 }
