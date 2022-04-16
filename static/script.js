@@ -1,6 +1,7 @@
 var variableStore = {};
 var variables = [];
 var workspace;
+var added = false;
 
 Blockly.Blocks['let'] = {
     init: function() {
@@ -37,34 +38,33 @@ Blockly.Blocks['let'] = {
         "nextStatement": null,
         "previousStatement": null,
         "extensions": ["dynamic_let_extension"],
-        });
+    });
     },
     onchange: function(event) {
         // make a dict/mapping of blockId -> variableName (only ever one block)
-        if(event.type == Blockly.Events.BLOCK_CHANGE) {            
-            // save variable name under block id key
-
-            // Variables are being added as each letter is typed - we probably need to delete
-            // extra variables by blockId or splice-delete them from the dropdown 
-
-            // for(let key in variableStore) { 
-            //     if(key == event.blockId) {
-            //         delete variableStore[event.blockId];
-            //     }
-            // }
-
-            variableStore[event.blockId] = '?' + event.newValue; // key should have ? in front to signify variable
-
-            if(workspace !== undefined) {
-                for(let block in workspace.getAllBlocks()) {
-                    if(workspace.getAllBlocks()[block].type === "triple") {
-                        let s = workspace.getAllBlocks()[block].inputList[0].fieldRow[0].generatedOptions_;            
-                        for(let key in variableStore) { 
-                            s.splice(1, 0, [variableStore[key], key]);
+        if(event.type === Blockly.Events.BLOCK_CHANGE) {
+            // BLOCK_CHANGE is called for dropdown change too - we only want text field change
+            if(event.name === "VARIABLE_NAME") {
+                // save variable name under block id key
+                variableStore[event.blockId] = '?' + event.newValue; // key should have ? in front to signify variable
+    
+                if(workspace !== undefined) {
+                    for(let block in workspace.getAllBlocks()) {
+                        if(workspace.getAllBlocks()[block].type === "triple") {
+                            let s = workspace.getAllBlocks()[block].inputList[0].fieldRow[0].generatedOptions_;            
+                            for(let key in variableStore) { 
+                                if(added) {
+                                    s[1] = [variableStore[key], key];
+                                }
+                                else {
+                                    s.splice(1, 0, [variableStore[key], key]);
+                                    added = true;
+                                }
+                            }
                         }
                     }
                 }
-            }
+            }            
         }
         else if(event.type === Blockly.Events.BLOCK_DELETE) {
             // When block is deleted, remove it from the variableStore
