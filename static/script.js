@@ -1,7 +1,6 @@
 var variableStore = {};
 var variables = [];
 var workspace;
-var added = false;
 
 Blockly.Blocks['let'] = {
     init: function() {
@@ -38,7 +37,7 @@ Blockly.Blocks['let'] = {
         "nextStatement": null,
         "previousStatement": null,
         "extensions": ["dynamic_let_extension"],
-    });
+        });
     },
     onchange: function(event) {
         // make a dict/mapping of blockId -> variableName (only ever one block)
@@ -47,30 +46,36 @@ Blockly.Blocks['let'] = {
             if(event.name === "VARIABLE_NAME") {
                 // save variable name under block id key
                 variableStore[event.blockId] = '?' + event.newValue; // key should have ? in front to signify variable
-    
+                
                 if(workspace !== undefined) {
                     for(let block in workspace.getAllBlocks()) {
                         if(workspace.getAllBlocks()[block].type === "triple") {
-                            let s = workspace.getAllBlocks()[block].inputList[0].fieldRow[0].generatedOptions_;            
+                            let dropdown = workspace.getAllBlocks()[block].inputList[0].fieldRow[0].generatedOptions_;            
                             for(let key in variableStore) { 
-                                if(added) {
-                                    s[1] = [variableStore[key], key];
-                                }
-                                else {
-                                    s.splice(1, 0, [variableStore[key], key]);
-                                    added = true;
+                                if(key === event.blockId) {
+                                    if(this.added) {
+                                        for(let i = 0; i < dropdown.length; i++) {
+                                            if(dropdown[i][1] == key) {
+                                                dropdown[i] = [variableStore[key], key];
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        dropdown.splice(1, 0, [variableStore[key], key]);
+                                        this.added = true;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }            
+            }
         }
         else if(event.type === Blockly.Events.BLOCK_DELETE) {
             // When block is deleted, remove it from the variableStore
             for(let key in variableStore) { // (Move this to block delete)
                 // remove old variablename if exists
-                if(key == event.blockId) {
+                if(key === event.blockId) {
                     delete variableStore[event.blockId];
                 }
             }
@@ -167,17 +172,6 @@ Blockly.Blocks['triple'] = {
         "helpUrl": "https://www.w3.org/TR/rdf-concepts/#section-triples"
         });
     },
-    onchange: function(event) {
-        // if(event.type == Blockly.Events.BLOCK_CHANGE) {
-        //     let s = this.inputList[0].fieldRow[0].generatedOptions_;
-        //     s.splice(1, 0, ["THIS IS A TEST", "testId"])
-        //     console.log("S: ", s);
-
-        //     for(let key in variableStore) { 
-        //         console.log("key: ", key);
-        //     }
-        // }
-    }
 };
 
 
