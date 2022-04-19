@@ -56,7 +56,7 @@ Blockly.Blocks['let'] = {
                                     if(this.added) {
                                         for(let i = 0; i < dropdown.length; i++) {
                                             if(dropdown[i][1] == key) {
-                                                dropdown[i] = [variableStore[key], key];
+                                                dropdown[i] = [variableStore[key], key]; // TODO make this more efficient than 3 loops + extensive testing (duplicates may happen)
                                             }
                                         }
                                     }
@@ -344,7 +344,11 @@ Blockly.JavaScript['limit'] = function(block) {
     return "";
 };
 
-const yasgui = new Yasgui(document.getElementById("yasgui"));
+const yasgui = new Yasgui(document.getElementById("yasgui"), {
+    requestConfig: { endpoint: window.location.protocol + '//' + window.location.host + "/query" },
+    copyEndpointOnNewTab: false,
+});
+
 function generateCode() {
     let code = Blockly.JavaScript.workspaceToCode(workspace);
     let query = prefix + code + suffix + limitStr;

@@ -1,10 +1,12 @@
 import json
+import io
+import sys
+from collections import Counter
 from flask import Flask, render_template
 from flask import request, jsonify
 import rdflib
 from rdflib.util import from_n3
-import sys
-from collections import Counter
+from rdflib.plugins.sparql.results.jsonresults import JSONResultSerializer
 
 graph = rdflib.Graph()
 graph.parse(sys.argv[1], format="turtle")
@@ -37,6 +39,27 @@ def filter_bnodes(seq):
 @app.route("/")
 def home():
     return render_template("index.html")
+
+# @app.route('/query', methods=['GET', 'POST'], endpoint='query_graph')
+# def query_graph():
+#     if request.method == "GET":
+#         query = request.args.get("query")
+#     elif (
+#         request.method == "POST"
+#         and request.content_type == "application/x-www-form-urlencoded"
+#     ):
+#         query = request.form.get("query")
+#     elif (
+#         request.method == "POST"
+#         and request.content_type == "application/sparql-query"
+#     ):
+#         print("SPARQL", request.form.keys())
+#         query = request.get_data()
+#     print(query)
+#     results = graph.query(query)
+#     json_results = io.StringIO()
+#     JSONResultSerializer(results).serialize(json_results)
+#     return jsonify(json.loads(json_results.getvalue()))
 
 @app.route("/subjects", methods=['POST'], endpoint='get_subjects')
 @wrap_counter
@@ -78,4 +101,4 @@ def get_predicate_objects():
     return graph.predicate_objects(subject=sub)
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
