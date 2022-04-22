@@ -56,7 +56,7 @@ Blockly.Blocks['let'] = {
                                     if(this.added) {
                                         for(let i = 0; i < dropdown.length; i++) {
                                             if(dropdown[i][1] == key) {
-                                                dropdown[i] = [variableStore[key], key]; // TODO make this more efficient than 3 loops + extensive testing (duplicates may happen)
+                                                dropdown[i] = [variableStore[key], key]; 
                                             }
                                         }
                                     }
@@ -191,7 +191,6 @@ async function post_data(endpoint, data) {
     return response.json();
 }
 
-// TODO bNodes may still be happening
 Blockly.Extensions.register('dynamic_let_extension', function() {
     let s = this.inputList[0]?.fieldRow?.[1]?.value_;
     let payload = {

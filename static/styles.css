@@ -1,0 +1,16 @@
+/* Navigation */
+.navbar {
+    margin-bottom: 1%;
+}
+
+.divider {
+    height: 3rem;   
+}
+
+.title {
+    height: 1rem;
+    display: flex;
+    background-color: lightgray;
+    padding: 1rem;
+    margin-bottom: 1%;
+}

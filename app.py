@@ -17,7 +17,6 @@ app = Flask(__name__)
 def to_uri(abbr):
     if abbr:
         return rdflib.URIRef(abbr)
-        return from_n3(abbr, nsm=graph.namespace_manager)
 
 def wrap_counter(func):
     def returned_func():
@@ -56,7 +55,6 @@ def query_graph():
     ):
         print("SPARQL", request.form.keys())
         query = request.get_data()
-    print(query)
     results = graph.query(query)
     json_results = io.StringIO()
     JSONResultSerializer(results).serialize(json_results)
@@ -102,4 +100,4 @@ def get_predicate_objects():
     return graph.predicate_objects(subject=sub)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
