@@ -1,4 +1,17 @@
 /* Navigation */
+.container {
+    max-width: 90%;
+}
+
+.yasqe .CodeMirror { 
+    min-height: 400px;
+}
+
+#blocklyDiv {
+    height: 400px;
+    max-width: 900px;
+}
+
 .navbar {
     margin-bottom: 1%;
 }

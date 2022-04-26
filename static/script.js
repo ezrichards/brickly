@@ -343,13 +343,62 @@ Blockly.JavaScript['limit'] = function(block) {
     return "";
 };
 
-const yasgui = new Yasgui(document.getElementById("yasgui"), {
+const yasqe = new Yasqe(document.getElementById("yasqe"), {
+    persistent: null,
     requestConfig: { endpoint: window.location.protocol + '//' + window.location.host + "/query" },
-    copyEndpointOnNewTab: false,
+});
+
+yasqe.on("queryResponse", (yasqeResponse) => {
+    console.log(yasqeResponse);
+});
+
+yasqe.query = async yasqe => {
+    const resp = {
+        head: {
+            vars: [],
+        },
+        results: {
+            bindings: [],
+        },
+    };
+
+    const result = this.yasqe.getValue();
+
+    for (const binding of result) {
+        if (resp.head.vars.length === 0) {
+            resp.head.vars = [...binding.keys()];
+        }
+
+        const b = {};
+
+        for (const key of resp.head.vars) {
+            const term = binding.get(key);
+
+            b[key] = {
+                value: term.value,
+                type: typelookup[term.termType],
+            };
+        }
+
+        resp.results.bindings.push(b);
+    }
+    
+    yasr.setResponse({
+        data: JSON.stringify(resp),
+        // data: JSON.stringify(yasqe.getValue()),
+        // contentType: "application/sparql-results+json",
+        contentType: "application/json",
+    });
+}
+
+const yasr = new Yasr(document.getElementById("yasr"), {
+    pluginOrder: ["table", "response"],
+    defaultPlugin: "table",
+    persistencyExpire: 0,
 });
 
 function generateCode() {
     let code = Blockly.JavaScript.workspaceToCode(workspace);
     let query = prefix + code + suffix + limitStr;
-    yasgui.getTab().yasqe.setValue(query);
+    yasqe.setValue(query);
 }
