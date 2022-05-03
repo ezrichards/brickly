@@ -7,6 +7,7 @@
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static', filename='styles.css') }}">
 </head>
 <html>
+    <!-- TODO add bootstrap Modal for tutorial, add documentation -->
     <body>
         <nav class="navbar sticky-top navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
@@ -23,7 +24,7 @@
                     <a class="nav-link" href="https://www.w3.org/TR/rdf11-primer/">RDF</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="https://www.w3.org/TR/rdf-sparql-query/">SPARQL</a>
+                    <a class="nav-link" href="https://www.w3.org/TR/sparql11-overview/">SPARQL</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="https://brick-tree-viewer.gtf.fyi/">Tree Viewer</a>
@@ -38,6 +39,7 @@
         <div class="container">
             <div class="row">
               <div class="col">
+                <!-- TODO make these headers look better -->
                 <p>Query Editor</p>
                 <div id="blocklyDiv"></div>
                 <button class="btn btn-primary" id="generate" onclick="generateCode()">Generate Code</button>
@@ -49,6 +51,7 @@
             </div>
             <div class="divider"></div>
             <div class="row">
+              <p>Query Results</p>
               <div id="yasr"></div>
             </div>
           </div>

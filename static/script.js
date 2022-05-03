@@ -348,14 +348,8 @@ const yasqe = new Yasqe(document.getElementById("yasqe"), {
     requestConfig: { endpoint: window.location.protocol + '//' + window.location.host + "/query" },
 });
 
-yasqe.on("queryResponse", (yasqeResponse) => {
-    console.log(yasqeResponse);
-    
-    yasr.setResponse({
-        data: JSON.stringify(yasqe.getValue()),
-        // contentType: "application/sparql-results+json",
-        contentType: "application/json",
-    });
+yasqe.on("queryResponse", (yasqeInstance, request) => {
+    yasr.setResponse(request);
 });
 
 const yasr = new Yasr(document.getElementById("yasr"), {
@@ -369,3 +363,20 @@ function generateCode() {
     let query = prefix + code + suffix + limitStr;
     yasqe.setValue(query);
 }
+
+/*
+
+TODO Documentation + webcast (record interface usage)
+
+EXAMPLE QUERY
+SELECT ?sensor ?zone w {
+    ?sensor a brick:Zone_Air_Temp_Sensor . (let)
+    ?dev a brick:VAV (let) . 
+    ?dev rdf haspoint ?sensor . 
+    ?zone a brick:HVAC zone (Let) .
+    ?dev brick:feeds ?zone .
+
+}
+
+
+*/
