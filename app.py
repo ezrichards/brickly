@@ -100,4 +100,4 @@ def get_predicate_objects():
     return graph.predicate_objects(subject=sub)
 
 if __name__ == "__main__":
-    app.run()
+    app.run("0.0.0.0")
