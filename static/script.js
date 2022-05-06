@@ -296,7 +296,7 @@ Blockly.JavaScript['let'] = function(block) {
     let str = "";
 
     if(type != "Any") {
-        str += "?" + varName + " rdf:type <" + type + "> .\n";
+        str += "    ?" + varName + " rdf:type <" + type + "> .\n";
     }
     return str;
 };
@@ -306,6 +306,7 @@ PREFIX unit: <http://qudt.org/vocab/unit/>\n\
 PREFIX owl: <http://www.w3.org/2002/07/owl#>\n\
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n\
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n\
+\n\
 \
 SELECT * WHERE {\n';
 let suffix = '}';
@@ -314,7 +315,7 @@ Blockly.JavaScript['triple'] = function(block) {
     let p = block.inputList[1]?.fieldRow?.[0]?.selectedOption_[0];
     let o = block.inputList[2]?.fieldRow?.[0]?.selectedOption_[0];
 
-    let code = "";
+    let code = "    ";
     if(!s.startsWith("?")) {
         code += "   <" + s + ">";
     }
@@ -363,20 +364,3 @@ function generateCode() {
     let query = prefix + code + suffix + limitStr;
     yasqe.setValue(query);
 }
-
-/*
-
-TODO Documentation + webcast (record interface usage)
-
-EXAMPLE QUERY
-SELECT ?sensor ?zone w {
-    ?sensor a brick:Zone_Air_Temp_Sensor . (let)
-    ?dev a brick:VAV (let) . 
-    ?dev rdf haspoint ?sensor . 
-    ?zone a brick:HVAC zone (Let) .
-    ?dev brick:feeds ?zone .
-
-}
-
-
-*/

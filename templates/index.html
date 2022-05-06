@@ -7,7 +7,6 @@
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static', filename='styles.css') }}">
 </head>
 <html>
-    <!-- TODO add bootstrap Modal for tutorial, add documentation -->
     <body>
         <nav class="navbar sticky-top navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
@@ -39,19 +38,23 @@
         <div class="container">
             <div class="row">
               <div class="col">
-                <!-- TODO make these headers look better -->
-                <p>Query Editor</p>
+                <h5>Query Editor</h5>
                 <div id="blocklyDiv"></div>
+
+                <!-- Button trigger modal -->
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Help</button>
+                
+                <!-- Code generation -->
                 <button class="btn btn-primary" id="generate" onclick="generateCode()">Generate Code</button>
               </div>
               <div class="col">
-                <p>Run Query</p>
+                <h5>Run Query</h5>
                 <div id="yasqe"></div>
               </div>
             </div>
             <div class="divider"></div>
             <div class="row">
-              <p>Query Results</p>
+              <h5>Query Results</h5>
               <div id="yasr"></div>
             </div>
           </div>
@@ -59,8 +62,31 @@
         <div class="divider"></div>
         <div class="container">
             <footer>
-                <p class="text-center text-muted">Made by <a href="https://github.com/gtfierro">@gtfierro</a> & <a href="https://github.com/Etheus">@etheus</a></p>
+                <p class="text-center text-muted">Made by <a href="https://github.com/gtfierro">gtfierro</a> & <a href="https://github.com/ezrichards">ezrichards</a></p>
             </footer>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Brickly Help</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                To create a query, use <b>let</b> blocks to create variables.
+                Then, use <b>triple</b> blocks to query relationships between created variables.
+                You can use a <b>limit</b> block to limit how many results your query yields.<br>
+
+                <br>View an example video here:
+                <iframe width="450" height="315" src="https://www.youtube.com/embed/cSFBMrzIK1s"></iframe>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+            </div>
         </div>
     </body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
