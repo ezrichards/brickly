@@ -24,7 +24,7 @@ After cloning, the app can be started using the `Dockerfile`:
 
 ## Example Query Creation
 
-An example demo video can be viewed [here](https://youtu.be/cSFBMrzIK1s).
+An example demo video can be viewed [here](https://youtu.be/cSFBMrzIK1s). Detailed instructions can be found below.
 
 Create three "let" blocks, named "sensor" "device" and "zone" respectively. Sensor should be a `https://brickschema.org/schema/Brick#Zone_Air_Temperature_Sensor`, device should be a `https://brickschema.org/schema/Brick#VAV` and zone should be a `https://brickschema.org/schema/Brick#HVAC_Zone`.
 
@@ -46,10 +46,10 @@ Click the arrow icon in the top right of the "Run Query" container to run the qu
 
 The generated code (as a result of the block query) should look like:
 
-    SELECT WHERE {
+    SELECT * WHERE {
 	    ?sensor rdf:type <https://brickschema.org/schema/Brick#Zone_Air_Temperature_Sensor> .
-		?device rdf:type <https://brickschema.org/schema/Brick#VAV> .
-		?zone rdf:type <https://brickschema.org/schema/Brick#HVAC_Zone> .
-		?device <https://brickschema.org/schema/Brick#hasPoint> ?sensor .
-		?device <https://brickschema.org/schema/Brick#feeds> ?zone .
+	    ?device rdf:type <https://brickschema.org/schema/Brick#VAV> .
+	    ?zone rdf:type <https://brickschema.org/schema/Brick#HVAC_Zone> .
+	    ?device <https://brickschema.org/schema/Brick#hasPoint> ?sensor .
+	    ?device <https://brickschema.org/schema/Brick#feeds> ?zone .
     }
