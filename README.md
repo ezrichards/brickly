@@ -20,8 +20,9 @@ After cloning, the app can be started using the `Dockerfile`:
 
     cd brickly
     docker build -t brickly .
-    docker run -dp 5000:5000 brickly
+    docker run -dp 5000:5000 brickly bldg.ttl
 
+Note that any valid turtle (.ttl) file can be used to query against.
 ## Example Query Creation
 
 An example demo video can be viewed [here](https://youtu.be/cSFBMrzIK1s). Detailed instructions can be found below.
