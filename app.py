@@ -9,7 +9,7 @@ from rdflib.util import from_n3
 from rdflib.plugins.sparql.results.jsonresults import JSONResultSerializer
 
 graph = rdflib.Graph()
-graph.parse(sys.argv[1], format="turtle")
+graph.parse("opt/" + sys.argv[1], format="turtle")
 graph.parse("brick-classes.ttl", format="turtle")
 
 app = Flask(__name__)

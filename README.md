@@ -20,7 +20,10 @@ After cloning, the app can be started using the `Dockerfile`:
 
     cd brickly
     docker build -t brickly .
-    docker run -dp 5000:5000 -v /brickly:/brickly brickly bldg.ttl
+    docker run -dp 5000:5000 --rm -v `pwd`:/opt brickly bldg.ttl
+
+Note that on Windows, `%cd%` must be used instead of ``pwd``.
+    docker run -dp 5000:5000 --rm -v %cd%:/opt brickly bldg.ttl
 
 Note that any valid turtle (.ttl) file can be used to query against instead of the example `bldg.ttl`.
 ## Example Query Creation
